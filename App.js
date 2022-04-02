@@ -15,7 +15,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STORAGE_KEY = "@toDos";
-
+const IS_WORKING = "working";
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
@@ -25,8 +25,14 @@ export default function App() {
   useEffect(() => {
     loadToDos();
   }, []);
-  const travel = () => setWorking(false);
-  const work = () => setWorking(true);
+  const travel = async () => {
+    setWorking(false);
+    await AsyncStorage.setItem(IS_WORKING, JSON.stringify("travel"));
+  };
+  const work = async () => {
+    setWorking(true);
+    await AsyncStorage.setItem(IS_WORKING, JSON.stringify("work"));
+  };
   const onChangeText = (payload) => setText(payload);
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
@@ -34,6 +40,9 @@ export default function App() {
   const loadToDos = async () => {
     const s = await AsyncStorage.getItem(STORAGE_KEY);
     setToDos(JSON.parse(s));
+    const isWorking = await AsyncStorage.getItem(IS_WORKING);
+    if (JSON.parse(isWorking) === "work") setWorking(true);
+    else setWorking(false);
   };
 
   const addTodo = async () => {
