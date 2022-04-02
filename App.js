@@ -19,6 +19,7 @@ export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+  const [done, setDone] = useState(false);
   useEffect(() => {
     loadToDos();
   }, []);
@@ -37,9 +38,10 @@ export default function App() {
     if (text === "") {
       return;
     }
-    const newToDos = { ...toDos, [Date.now()]: { text, working } };
+    const newToDos = { ...toDos, [Date.now()]: { text, working, done } };
     setToDos(newToDos);
     await saveToDos(newToDos);
+    setDone(false);
     setText("");
   };
   const deleteToDo = (key) => {
@@ -56,6 +58,12 @@ export default function App() {
       },
     ]);
     return;
+  };
+  const doneToDo = (key) => {
+    const newToDos = { ...toDos };
+    newToDos[key].done = !newToDos[key].done;
+    setToDos(newToDos);
+    saveToDos(newToDos);
   };
   return (
     <View style={styles.container}>
@@ -88,7 +96,16 @@ export default function App() {
         {Object.keys(toDos).map((key) =>
           toDos[key].working === working ? (
             <View style={styles.toDo} key={key}>
-              <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <TouchableOpacity onPress={() => doneToDo(key)}>
+                {toDos[key].done ? (
+                  <Fontisto name="checkbox-active" size={20} color="black" />
+                ) : (
+                  <Fontisto name="checkbox-passive" size={20} color="black" />
+                )}
+              </TouchableOpacity>
+              <Text style={toDos[key].done ? styles.doneText : styles.toDoText}>
+                {toDos[key].text}
+              </Text>
               <TouchableOpacity onPress={() => deleteToDo(key)}>
                 <Fontisto name="trash" size={18} color={theme.grey} />
               </TouchableOpacity>
@@ -137,5 +154,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "500",
+  },
+  doneText: {
+    color: theme.grey,
+    fontSize: 16,
+    textDecorationLine: "line-through",
   },
 });
